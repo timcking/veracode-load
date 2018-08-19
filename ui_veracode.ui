@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>413</width>
-    <height>206</height>
+    <width>394</width>
+    <height>147</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>XML2Excel</string>
@@ -16,7 +21,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1">
       <property name="spacing">
        <number>0</number>
       </property>
@@ -27,12 +32,15 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <property name="topMargin">
          <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>20</number>
+         <number>16</number>
         </property>
         <item>
          <widget class="QLabel" name="label">
@@ -67,11 +75,31 @@
        </layout>
       </item>
       <item>
-       <widget class="QDialogButtonBox" name="buttonBox">
-        <property name="standardButtons">
-         <set>QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+        <property name="spacing">
+         <number>16</number>
         </property>
-       </widget>
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item alignment="Qt::AlignRight">
+         <widget class="QPushButton" name="buttonLoad">
+          <property name="text">
+           <string>Load</string>
+          </property>
+         </widget>
+        </item>
+        <item alignment="Qt::AlignLeft">
+         <widget class="QPushButton" name="buttonClose">
+          <property name="text">
+           <string>Close</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
@@ -82,9 +110,14 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>413</width>
+     <width>394</width>
      <height>20</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -94,7 +127,13 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </widget>
   <action name="actionOpen">
    <property name="text">
     <string>Open ...</string>

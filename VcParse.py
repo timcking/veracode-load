@@ -4,16 +4,15 @@ import sys
 
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
-xml_file = ""
 
-def getScans():
+def getScans(xml_file):
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
     # Need to get analysis_id first
     for dr in root.iter(URL + "detailedreport"):
         analysis_id = int(dr.attrib["analysis_id"])
-        total_flaws = int((dr.attrib["total_flaws"]))
+        total_scans = int((dr.attrib["total_flaws"]))
         generation_date = dr.attrib["generation_date"]
 
     # Create a workbook and add a worksheet.
@@ -35,18 +34,18 @@ def getScans():
         module_name = flaw.attrib["name"]
 
     # Write scans
-    scanList = [int(analysis_id), version, module_name, generation_date, int(total_flaws)]
+    scanList = [int(analysis_id), version, module_name, generation_date, int(total_scans)]
     col = 0
     for item in scanList:
         worksheet.write(1,col, item)
         col += 1
 
     workbook.close()
-    print("Scan count: %s" % total_flaws)
+    print("Scan count: %s" % total_scans)
 
-    return int(analysis_id)
+    return total_scans, analysis_id
 
-def getFlaws(analysis_id):
+def getFlaws(xml_file, analysis_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
@@ -70,7 +69,6 @@ def getFlaws(analysis_id):
 
         # Ignore those with fixed status
         if remediation_status != "Fixed":
-
             severity = (cwe.attrib["severity"])
             issueid = (cwe.attrib["issueid"])
             cweid = (cwe.attrib["cweid"])
@@ -91,13 +89,19 @@ def getFlaws(analysis_id):
 
             row += 1
 
+    total_flaws = (row - 1)
     workbook.close()
 
-    print ("Flaw count: %s" % str(row - 1))
+    print ("Flaw count: %s" % total_flaws)
 
-def main():
-    analysis_id = getScans()
-    getFlaws(analysis_id)
+    return total_flaws
+
+def main(xml_file):
+    total_scans, analysis_id = getScans(xml_file)
+    total_flaws = getFlaws(xml_file, analysis_id)
+
+    if total_scans != total_flaws:
+        print("Flaw counts do not match!")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -105,4 +109,4 @@ if __name__ == "__main__":
         sys.exit(1)
         
     xml_file = sys.argv[1]
-    main()
+    main(xml_file)

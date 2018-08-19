@@ -2,7 +2,7 @@ import pyodbc
 
 conn_str = (
     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=Veracode.accdb;'
+    r'DBQ=C:\\gDrive\\BAR\\veracode-load\\Veracode.accdb;'
 )
 
 # conn_str = (
@@ -10,10 +10,10 @@ conn_str = (
 #     r'Uid=Admin;Pwd=;'
 # )
 
-conn_str = (
-    r'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\gDrive\BAR\veracode-load\Veracode.accdb;'
-    r'Persist Security Info=False;'
-)
+# conn_str = (
+#     r'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\gDrive\BAR\veracode-load\Veracode.accdb;'
+#     r'Persist Security Info=False;'
+# )
 
 cnxn = pyodbc.connect(conn_str)
 crsr = cnxn.cursor()

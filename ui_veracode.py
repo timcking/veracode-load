@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_veracode.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(413, 206)
+        MainWindow.resize(394, 147)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        MainWindow.setFont(font)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -21,7 +24,8 @@ class Ui_MainWindow(object):
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(-1, 0, -1, 20)
+        self.horizontalLayout.setContentsMargins(-1, 0, -1, 16)
+        self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setObjectName("label")
@@ -33,22 +37,37 @@ class Ui_MainWindow(object):
         self.textFile.setObjectName("textFile")
         self.horizontalLayout.addWidget(self.textFile)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.buttonBox = QtWidgets.QDialogButtonBox(self.centralwidget)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Close|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout.addWidget(self.buttonBox)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.horizontalLayout_3.setContentsMargins(-1, -1, -1, 0)
+        self.horizontalLayout_3.setSpacing(16)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.buttonLoad = QtWidgets.QPushButton(self.centralwidget)
+        self.buttonLoad.setObjectName("buttonLoad")
+        self.horizontalLayout_3.addWidget(self.buttonLoad, 0, QtCore.Qt.AlignRight)
+        self.buttonClose = QtWidgets.QPushButton(self.centralwidget)
+        self.buttonClose.setObjectName("buttonClose")
+        self.horizontalLayout_3.addWidget(self.buttonClose, 0, QtCore.Qt.AlignLeft)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.verticalLayout.setStretch(0, 1)
+        self.verticalLayout.setStretch(1, 1)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 413, 20))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 394, 20))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.menuBar.setFont(font)
         self.menuBar.setObjectName("menuBar")
         self.menuFile = QtWidgets.QMenu(self.menuBar)
         self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menuBar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        self.statusBar = QtWidgets.QStatusBar(MainWindow)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.statusBar.setFont(font)
+        self.statusBar.setObjectName("statusBar")
+        MainWindow.setStatusBar(self.statusBar)
         self.actionOpen = QtWidgets.QAction(MainWindow)
         self.actionOpen.setObjectName("actionOpen")
         self.menuFile.addAction(self.actionOpen)
@@ -61,6 +80,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "XML2Excel"))
         self.label.setText(_translate("MainWindow", "XML File"))
+        self.buttonLoad.setText(_translate("MainWindow", "Load"))
+        self.buttonClose.setText(_translate("MainWindow", "Close"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionOpen.setText(_translate("MainWindow", "Open ..."))
 

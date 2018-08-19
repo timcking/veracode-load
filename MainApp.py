@@ -3,13 +3,21 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from ui_veracode import Ui_MainWindow
+import VcParse
 
 class AppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.ui = Ui_MainWindow()
+        self.setMinimumSize(QSize(700, 200))
         self.ui.setupUi(self)
+
+        self.ui.buttonLoad.clicked.connect(self.onLoadClick)
+        self.ui.buttonClose.clicked.connect(self.onCloseClick)
+
+        self.ui.buttonLoad.setEnabled(False)
+        self.ui.textFile.textChanged.connect(self.toggleButton)
 
         openFile = QAction(QIcon('open.png'), 'Open', self)
         openFile = self.ui.actionOpen
@@ -18,6 +26,7 @@ class AppWindow(QMainWindow):
         menubar = self.ui.menuBar
         menuFile = self.ui.menuFile
         menuFile.addAction(openFile)     
+        self.ui.statusBar.showMessage('Ready')
 
         self.show()
 
@@ -25,14 +34,32 @@ class AppWindow(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, 'Open file', '.')
 
         if fname[0]:
-            f = open(fname[0], 'r')
+            self.ui.textFile.setText(fname[0])
 
-            with f:
-                data = f.read()
-                self.ui.textFile.setText(data)
+    def onLoadClick(self):
+        xmlFile = self.ui.textFile.text()
+        total_scans, analysis_id = VcParse.getScans(xmlFile)
+        total_flaws = VcParse.getFlaws(xmlFile, analysis_id)
+
+        if total_scans == total_flaws:
+            self.ui.statusBar.showMessage('Completed')
+        else:
+            self.ui.statusBar.showMessage("Flaw count does not match!")
+
+    def toggleButton(self):
+        if len(self.ui.textFile.text()) > 0:
+            self.ui.buttonLoad.setEnabled(True)
+        else:
+            self.ui.buttonLoad.setEnabled(False)
+
+    def onCloseClick(self):
+        self.close()
 
 if __name__ == '__main__':
    app = QApplication(sys.argv)
    w = AppWindow()
    w.show()
-   sys.exit(app.exec_())
+
+   # Vs Code bug
+   # sys.exit(app.exec_())
+   app.exec_()
