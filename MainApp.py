@@ -26,7 +26,6 @@ class AppWindow(QMainWindow):
         menubar = self.ui.menuBar
         menuFile = self.ui.menuFile
         menuFile.addAction(openFile)     
-        self.ui.statusBar.showMessage('Ready')
 
         self.show()
 
@@ -35,6 +34,7 @@ class AppWindow(QMainWindow):
 
         if fname[0]:
             self.ui.textFile.setText(fname[0])
+            self.ui.statusBar.showMessage('Ready')
 
     def onLoadClick(self):
         xmlFile = self.ui.textFile.text()
@@ -42,9 +42,10 @@ class AppWindow(QMainWindow):
         total_flaws = VcParse.getFlaws(xmlFile, analysis_id)
 
         if total_scans == total_flaws:
-            self.ui.statusBar.showMessage('Completed')
+            self.ui.statusBar.showMessage('Completed, Total Flaws = ' + str(total_flaws))
         else:
-            self.ui.statusBar.showMessage("Flaw count does not match!")
+            self.ui.statusBar.showMessage('Flaw count does not match! ' + str(total_scans) +
+            ' vs. ' + str(total_flaws))
 
     def toggleButton(self):
         if len(self.ui.textFile.text()) > 0:

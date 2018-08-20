@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "bar_coreapps.xml"
+                "data/bar_coreapps.xml"
             ]
         },
         {

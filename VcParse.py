@@ -16,7 +16,7 @@ def getScans(xml_file):
         generation_date = dr.attrib["generation_date"]
 
     # Create a workbook and add a worksheet.
-    workbook = xlsxwriter.Workbook("scans_" + str(analysis_id) + ".xlsx")
+    workbook = xlsxwriter.Workbook("data/scans_" + str(analysis_id) + ".xlsx")
     worksheet = workbook.add_worksheet()
 
     # Write scans header
@@ -50,7 +50,7 @@ def getFlaws(xml_file, analysis_id):
     root = tree.getroot()
 
     # Create a workbook and add a worksheet.
-    workbook = xlsxwriter.Workbook("flaws_" + str(analysis_id) + ".xlsx")
+    workbook = xlsxwriter.Workbook("data/flaws_" + str(analysis_id) + ".xlsx")
     worksheet = workbook.add_worksheet()
 
     # Write flaws header
