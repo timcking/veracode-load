@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "data/bar_coreapps.xml"
+                "data/DetailedReport_Coreapps_15_Aug_2018_XML.xml"
             ]
         },
         {

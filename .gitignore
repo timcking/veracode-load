@@ -50,6 +50,7 @@ microblog.log*
 pip-selfcheck.json
 
 data
+*.exe
 *.xlsx
 *.xml
 *.laccdb

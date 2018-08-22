@@ -10,7 +10,7 @@ class AppWindow(QMainWindow):
         super().__init__()
 
         self.ui = Ui_MainWindow()
-        self.setMinimumSize(QSize(700, 200))
+        self.setMinimumSize(QSize(650, 200))
         self.ui.setupUi(self)
 
         self.ui.buttonLoad.clicked.connect(self.onLoadClick)
@@ -30,7 +30,7 @@ class AppWindow(QMainWindow):
         self.show()
 
     def showDialog(self):
-        fname = QFileDialog.getOpenFileName(self, 'Open file', '.')
+        fname = QFileDialog.getOpenFileName(self, 'Open file', 'data/')
 
         if fname[0]:
             self.ui.textFile.setText(fname[0])

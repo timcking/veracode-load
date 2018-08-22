@@ -14,13 +14,15 @@ def getScans(xml_file):
         analysis_id = int(dr.attrib["analysis_id"])
         total_scans = int((dr.attrib["total_flaws"]))
         generation_date = dr.attrib["generation_date"]
+        sandbox_name = dr.attrib["sandbox_name"]
+        submitter = dr.attrib["submitter"]
 
     # Create a workbook and add a worksheet.
     workbook = xlsxwriter.Workbook("data/scans_" + str(analysis_id) + ".xlsx")
     worksheet = workbook.add_worksheet()
 
     # Write scans header
-    scanHeaderList = ['analysis_id', 'version', 'module_name', 'generation_date', 'total_flaws']
+    scanHeaderList = ['analysis_id', 'version', 'module_name', 'sandbox_name', 'submitter', 'generation_date', 'total_flaws']
     col = 0
     for item in scanHeaderList:
         worksheet.write(0,col, item)
@@ -34,7 +36,7 @@ def getScans(xml_file):
         module_name = flaw.attrib["name"]
 
     # Write scans
-    scanList = [int(analysis_id), version, module_name, generation_date, int(total_scans)]
+    scanList = [int(analysis_id), version, module_name, sandbox_name, submitter, generation_date, int(total_scans)]
     col = 0
     for item in scanList:
         worksheet.write(1,col, item)
