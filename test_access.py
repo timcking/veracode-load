@@ -11,10 +11,11 @@ cursor = conn.cursor()
 # cursor.execute("SELECT COUNT(*) FROM flaws")
 # num_flaws = cursor.fetchone()
 # print (num_flaws)
+scanList = [int(1234567), "This is version"]
 
 sql = "INSERT INTO scans(analysis_id, version) VALUES (?, ?)"
 
-cursor.execute(sql, 12345, 'awesome library')
+cursor.execute(sql, scanList)
 conn.commit()
 
 sql = "SELECT * FROM scans"

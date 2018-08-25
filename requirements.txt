@@ -1,0 +1,4 @@
+pyodbc==4.0.24
+PyQt5==5.11.2
+PyQt5-sip==4.19.12
+XlsxWriter==1.0.7

@@ -1,9 +1,17 @@
 import xml.etree.ElementTree as ET
-import xlsxwriter
 import sys
+import pyodbc
+import datetime
 
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
+
+CONN_STR = (
+    r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
+    r'DBQ=.\\VeracodeAug.accdb;'
+)
+
+load_date = datetime.datetime.now()
 
 def getScans(xml_file):
     tree = ET.parse(xml_file)
@@ -17,17 +25,6 @@ def getScans(xml_file):
         sandbox_name = dr.attrib["sandbox_name"]
         submitter = dr.attrib["submitter"]
 
-    # Create a workbook and add a worksheet.
-    workbook = xlsxwriter.Workbook("data/scans_" + str(analysis_id) + ".xlsx")
-    worksheet = workbook.add_worksheet()
-
-    # Write scans header
-    scanHeaderList = ['analysis_id', 'version', 'module_name', 'sandbox_name', 'submitter', 'generation_date', 'total_flaws']
-    col = 0
-    for item in scanHeaderList:
-        worksheet.write(0,col, item)
-        col += 1
-
     for sa in root.findall("./" + URL + "static-analysis"):
         version = sa.attrib["version"]
 
@@ -36,32 +33,19 @@ def getScans(xml_file):
         module_name = flaw.attrib["name"]
 
     # Write scans
-    scanList = [int(analysis_id), version, module_name, sandbox_name, submitter, generation_date, int(total_scans)]
-    col = 0
-    for item in scanList:
-        worksheet.write(1,col, item)
-        col += 1
+    scanList = [int(analysis_id), version, module_name, sandbox_name, submitter,
+                generation_date, int(total_scans), load_date]
+    writeAccessScan(scanList)
 
-    workbook.close()
     print("Scan count: %s" % total_scans)
-
     return total_scans, analysis_id
+
 
 def getFlaws(xml_file, analysis_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
-    # Create a workbook and add a worksheet.
-    workbook = xlsxwriter.Workbook("data/flaws_" + str(analysis_id) + ".xlsx")
-    worksheet = workbook.add_worksheet()
-
-    # Write flaws header
-    flawHeaderList = ['analysis_id', 'citrix_ticket_id', 'severity', 'issue_id', 'remediation_status',
-                      'cwe_id', 'category_name', 'source_file', 'line_num']
-    col = 0
-    for item in flawHeaderList:
-        worksheet.write(0, col, item)
-        col += 1
+    conn = pyodbc.connect(CONN_STR)
 
     # Write flaws
     row = 1
@@ -79,24 +63,42 @@ def getFlaws(xml_file, analysis_id):
             line_num = (cwe.attrib["line"])
 
             # Placeholder for linking with tickets
-            citrix_ticket_id = None
+            ticket_id = None
 
             # Write flaws
-            flawList = [int(analysis_id), citrix_ticket_id, int(severity), int(issueid), remediation_status,
-                        int(cweid), categoryname, source_file, int(line_num)]
-            col = 0
-            for item in flawList:
-                worksheet.write(row, col, item)
-                col += 1
+            flawList = [int(analysis_id), ticket_id, int(severity), int(issueid), remediation_status,
+                        int(cweid), categoryname, source_file, int(line_num), load_date]
 
+            writeAccessFlaw(conn, flawList)
             row += 1
 
+    conn.commit()
+    conn.close()
+
     total_flaws = (row - 1)
-    workbook.close()
-
     print ("Flaw count: %s" % total_flaws)
-
     return total_flaws
+
+def writeAccessScan(scanList):
+    # Insert into DB
+    conn = pyodbc.connect(CONN_STR)
+    cursor = conn.cursor()
+
+    sql = "INSERT INTO scans(analysis_id, version, module_name, sandbox_name, submitter, " +\
+          "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+
+    cursor.execute(sql, scanList)
+    conn.commit()
+    conn.close()
+
+def writeAccessFlaw(conn, flawList):
+    # Insert into DB
+    cursor = conn.cursor()
+
+    sql = "INSERT INTO flaws(analysis_id, ticket_id, severity, issue_id, remediation_status, " +\
+          "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+    cursor.execute(sql, flawList)
 
 def main(xml_file):
     total_scans, analysis_id = getScans(xml_file)

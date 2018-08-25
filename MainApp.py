@@ -10,7 +10,7 @@ class AppWindow(QMainWindow):
         super().__init__()
 
         self.ui = Ui_MainWindow()
-        self.setMinimumSize(QSize(650, 200))
+        self.setMinimumSize(QSize(700, 200))
         self.ui.setupUi(self)
 
         self.ui.buttonLoad.clicked.connect(self.onLoadClick)
