@@ -30,11 +30,13 @@ class AppWindow(QMainWindow):
         self.show()
 
     def showDialog(self):
-        fname = QFileDialog.getOpenFileName(self, 'Open file', 'data/')
+        fname = QFileDialog.getOpenFileName(self, 'Open file', 'xml/')
 
         if fname[0]:
             self.ui.textFile.setText(fname[0])
             self.ui.statusBar.showMessage('Ready')
+        else:
+            self.ui.statusBar.showMessage('File not found!')
 
     def onLoadClick(self):
         xmlFile = self.ui.textFile.text()

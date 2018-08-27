@@ -1,17 +1,19 @@
 import xml.etree.ElementTree as ET
 import sys
 import pyodbc
-import datetime
+from datetime import datetime
 
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
 CONN_STR = (
     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=.\\VeracodeAug.accdb;'
+    r'DBQ=.\\data\VeracodeAug.accdb;'
 )
 
-load_date = datetime.datetime.now()
+LOAD_ERR = None
+
+load_date = datetime.now()
 
 def getScans(xml_file):
     tree = ET.parse(xml_file)
@@ -21,9 +23,11 @@ def getScans(xml_file):
     for dr in root.iter(URL + "detailedreport"):
         analysis_id = int(dr.attrib["analysis_id"])
         total_scans = int((dr.attrib["total_flaws"]))
-        generation_date = dr.attrib["generation_date"]
         sandbox_name = dr.attrib["sandbox_name"]
         submitter = dr.attrib["submitter"]
+        str_gen_date = dr.attrib["generation_date"]
+
+        generation_date = datetime.strptime(str_gen_date, '%Y-%m-%d %H:%M:%S %Z')
 
     for sa in root.findall("./" + URL + "static-analysis"):
         version = sa.attrib["version"]
@@ -35,6 +39,7 @@ def getScans(xml_file):
     # Write scans
     scanList = [int(analysis_id), version, module_name, sandbox_name, submitter,
                 generation_date, int(total_scans), load_date]
+
     writeAccessScan(scanList)
 
     print("Scan count: %s" % total_scans)
@@ -81,24 +86,32 @@ def getFlaws(xml_file, analysis_id):
 
 def writeAccessScan(scanList):
     # Insert into DB
-    conn = pyodbc.connect(CONN_STR)
-    cursor = conn.cursor()
+    try:
+        conn = pyodbc.connect(CONN_STR)
+        cursor = conn.cursor()
 
-    sql = "INSERT INTO scans(analysis_id, version, module_name, sandbox_name, submitter, " +\
-          "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO scans(analysis_id, version, module_name, sandbox_name, submitter, " +\
+            "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 
-    cursor.execute(sql, scanList)
-    conn.commit()
-    conn.close()
+        cursor.execute(sql, scanList)
+        conn.commit()
+        conn.close()
+    except pyodbc.Error as ex:
+        print (ex)
+        sys.exit(1)
 
 def writeAccessFlaw(conn, flawList):
     # Insert into DB
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    sql = "INSERT INTO flaws(analysis_id, ticket_id, severity, issue_id, remediation_status, " +\
-          "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO flaws(analysis_id, ticket_id, severity, issue_id, remediation_status, " +\
+            "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-    cursor.execute(sql, flawList)
+        cursor.execute(sql, flawList)
+    except pyodbc.Error as ex:
+        print (ex)
+        sys.exit(1)
 
 def main(xml_file):
     total_scans, analysis_id = getScans(xml_file)
