@@ -22,6 +22,7 @@ def getScans(xml_file):
     # Need to get analysis_id first
     for dr in root.iter(URL + "detailedreport"):
         analysis_id = int(dr.attrib["analysis_id"])
+        sandbox_id = int(dr.attrib["sandbox_id"])
         total_scans = int((dr.attrib["total_flaws"]))
         sandbox_name = dr.attrib["sandbox_name"]
         submitter = dr.attrib["submitter"]
@@ -37,7 +38,7 @@ def getScans(xml_file):
         module_name = flaw.attrib["name"]
 
     # Write scans
-    scanList = [int(analysis_id), version, module_name, sandbox_name, submitter,
+    scanList = [int(analysis_id), int(sandbox_id), version, module_name, sandbox_name, submitter,
                 generation_date, int(total_scans), load_date]
 
     writeAccessScan(scanList)
@@ -90,8 +91,8 @@ def writeAccessScan(scanList):
         conn = pyodbc.connect(CONN_STR)
         cursor = conn.cursor()
 
-        sql = "INSERT INTO scans(analysis_id, version, module_name, sandbox_name, submitter, " +\
-            "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO scans(analysis_id, sandbox_id, version, module_name, sandbox_name, submitter, " +\
+              "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         cursor.execute(sql, scanList)
         conn.commit()
@@ -106,7 +107,7 @@ def writeAccessFlaw(conn, flawList):
         cursor = conn.cursor()
 
         sql = "INSERT INTO flaws(analysis_id, ticket_id, severity, issue_id, remediation_status, " +\
-            "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+              "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         cursor.execute(sql, flawList)
     except pyodbc.Error as ex:
