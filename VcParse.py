@@ -11,8 +11,6 @@ CONN_STR = (
     r'DBQ=.\\data\VeracodeAug.accdb;'
 )
 
-LOAD_ERR = None
-
 load_date = datetime.now()
 
 def getScans(xml_file):
@@ -44,10 +42,10 @@ def getScans(xml_file):
     writeAccessScan(scanList)
 
     print("Scan count: %s" % total_scans)
-    return total_scans, analysis_id
+    return total_scans, analysis_id, sandbox_id
 
 
-def getFlaws(xml_file, analysis_id):
+def getFlaws(xml_file, analysis_id, sandbox_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
@@ -72,7 +70,7 @@ def getFlaws(xml_file, analysis_id):
             ticket_id = None
 
             # Write flaws
-            flawList = [int(analysis_id), ticket_id, int(severity), int(issueid), remediation_status,
+            flawList = [int(analysis_id), int(sandbox_id), ticket_id, int(severity), int(issueid), remediation_status,
                         int(cweid), categoryname, source_file, int(line_num), load_date]
 
             writeAccessFlaw(conn, flawList)
@@ -86,14 +84,13 @@ def getFlaws(xml_file, analysis_id):
     return total_flaws
 
 def writeAccessScan(scanList):
+    sql = "INSERT INTO scans(analysis_id, sandbox_id, version, module_name, sandbox_name, submitter, " +\
+          "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
     # Insert into DB
     try:
         conn = pyodbc.connect(CONN_STR)
         cursor = conn.cursor()
-
-        sql = "INSERT INTO scans(analysis_id, sandbox_id, version, module_name, sandbox_name, submitter, " +\
-              "generation_date, total_flaws, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
         cursor.execute(sql, scanList)
         conn.commit()
         conn.close()
@@ -102,24 +99,44 @@ def writeAccessScan(scanList):
         sys.exit(1)
 
 def writeAccessFlaw(conn, flawList):
+    sql = "INSERT INTO flaws(analysis_id, sandbox_id, ticket_id, severity, issue_id, remediation_status, " +\
+          "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
     # Insert into DB
     try:
         cursor = conn.cursor()
-
-        sql = "INSERT INTO flaws(analysis_id, ticket_id, severity, issue_id, remediation_status, " +\
-              "cwe_id, category_name, source_file, line_num, load_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
         cursor.execute(sql, flawList)
     except pyodbc.Error as ex:
         print (ex)
         sys.exit(1)
 
+def getFlawCount(queryParams):
+
+    sql = "SELECT COUNT(*) AS thecount " +\
+          "  FROM flaws " +\
+          " WHERE analysis_id = ? " +\
+          "   AND sandbox_id = ? "
+
+    try:
+        conn = pyodbc.connect(CONN_STR)
+        cursor = conn.cursor()
+        cursor.execute(sql, queryParams)
+    except pyodbc.Error as ex:
+        print (ex)
+
+    for row in cursor.fetchone():
+        print (row)
+
 def main(xml_file):
-    total_scans, analysis_id = getScans(xml_file)
-    total_flaws = getFlaws(xml_file, analysis_id)
+    total_scans, analysis_id, sandbox_id = getScans(xml_file)
+    total_flaws = getFlaws(xml_file, analysis_id, sandbox_id)
 
     if total_scans != total_flaws:
         print("Flaw counts do not match!")
+        sys.exit(1)
+    
+    queryParams = [analysis_id, sandbox_id]
+    getFlawCount(queryParams)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

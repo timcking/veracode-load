@@ -40,8 +40,8 @@ class AppWindow(QMainWindow):
 
     def onLoadClick(self):
         xmlFile = self.ui.textFile.text()
-        total_scans, analysis_id = VcParse.getScans(xmlFile)
-        total_flaws = VcParse.getFlaws(xmlFile, analysis_id)
+        total_scans, analysis_id, sandbox_id = VcParse.getScans(xmlFile)
+        total_flaws = VcParse.getFlaws(xmlFile, analysis_id, sandbox_id)
 
         if total_scans == total_flaws:
             self.ui.statusBar.showMessage('Completed, Total Flaws = ' + str(total_flaws))

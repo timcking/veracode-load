@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>XML2Excel</string>
+   <string>XML Loader</string>
   </property>
   <property name="windowIcon">
    <iconset>

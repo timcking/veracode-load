@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "XML2Excel"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "XML Loader"))
         self.label.setText(_translate("MainWindow", "XML File"))
         self.buttonLoad.setText(_translate("MainWindow", "Load"))
         self.buttonClose.setText(_translate("MainWindow", "Close"))
