@@ -48,7 +48,7 @@ class AppWindow(QMainWindow):
         else:
             self.ui.statusBar.showMessage('Flaw count does not match! ' + str(total_scans) +
             ' vs. ' + str(total_flaws))
-
+            
     def toggleButton(self):
         if len(self.ui.textFile.text()) > 0:
             self.ui.buttonLoad.setEnabled(True)
@@ -59,10 +59,10 @@ class AppWindow(QMainWindow):
         self.close()
 
 if __name__ == '__main__':
-   app = QApplication(sys.argv)
-   w = AppWindow()
-   w.show()
+    app = QApplication(sys.argv)
+    w = AppWindow()
+    w.show()
 
-   # Vs Code bug
-   # sys.exit(app.exec_())
-   app.exec_()
+    # Vs Code bug
+    # sys.exit(app.exec_())
+    app.exec_()

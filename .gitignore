@@ -56,3 +56,5 @@ xml
 *.xml
 *.laccdb
 *.accdb
+*.log
+log
