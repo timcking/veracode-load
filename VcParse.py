@@ -63,38 +63,50 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
 
     # Write flaws
     row = 1
+    fixed = 0
+    
     strNode = "./" + URL + "severity/" + URL + "category/" + URL + "cwe/" + URL + "staticflaws/" + URL + "flaw"
     for cwe in root.findall(strNode):
         remediation_status = (cwe.attrib["remediation_status"])
 
+        issueid = (cwe.attrib["issueid"])
         # Ignore those with fixed status
-        if remediation_status != "Fixed":
-            severity = (cwe.attrib["severity"])
-            issueid = (cwe.attrib["issueid"])
-            cweid = (cwe.attrib["cweid"])
-            categoryname = (cwe.attrib["categoryname"])
-            source_file = (cwe.attrib["sourcefile"])
-            line_num = (cwe.attrib["line"])
+        severity = (cwe.attrib["severity"])
+        cweid = (cwe.attrib["cweid"])
+        categoryname = (cwe.attrib["categoryname"])
+        source_file = (cwe.attrib["sourcefile"])
+        line_num = (cwe.attrib["line"])
 
-            # Placeholder for linking with tickets
-            ticket_id = None
+        # Placeholder for linking with tickets
+        ticket_id = None
 
-            # Check for existing
-            queryParams = [analysis_id, sandbox_id, issueid]
-            flawCount = getFlawCount(conn, queryParams)
+        # Check for existing
+        queryParams = [analysis_id, sandbox_id, issueid]
+        flawCount = getFlawCount(conn, queryParams)
 
-            if (flawCount > 0):
-                logging.info("UPDATING existing flaw for analysis_id: %s, sandbox_id: %s, issue_id: %s"
-                       % (str(analysis_id), str(sandbox_id), str(issueid)))
-                
-                flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(issueid)]
-                updateFlaw(conn, flawList)
-            else:
-                update_date = None
-                flawList = [int(analysis_id), int(sandbox_id), ticket_id, int(severity), int(issueid), remediation_status,
-                            int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
-                insertFlaw(conn, flawList)
-
+        if (flawCount > 0):
+            logging.info("UPDATING existing flaw for analysis_id: %s, sandbox_id: %s, issue_id: %s"
+                   % (str(analysis_id), str(sandbox_id), str(issueid)))
+            
+            flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(issueid)]
+            updateFlaw(conn, flawList)
+            
+            # Delete other analyis_id's with same sandbox_id and issue_id
+            flawList = [int(analysis_id), int(sandbox_id), int(issueid)]
+            deleteFlaw(conn, flawList)
+            #logging.info("DELETED duplicate flaws for analysis_id: %s, sandbox_id: %s, issue_id: %s"
+            #              % (analysis_id, sandbox_id, issueid))
+            
+        else:
+            update_date = None
+            flawList = [int(analysis_id), int(sandbox_id), ticket_id, int(severity), int(issueid), remediation_status,
+                        int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
+            insertFlaw(conn, flawList)
+            
+        # Need to track fixed separately
+        if remediation_status == "Fixed":
+            fixed += 1
+        else:
             row += 1
 
     conn.commit()
@@ -102,7 +114,8 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
 
     total_flaws = (row - 1)
     logging.info ("Flaw count: %s" % total_flaws)
-    
+    logging.info ("Fixed count: %s" % fixed)
+
     return total_flaws
 
 def insertScan(scanList):
@@ -139,16 +152,39 @@ def updateFlaw(conn, flawList):
           " WHERE analysis_id = ? " +\
           "   AND sandbox_id = ? " +\
           "   AND issue_id = ?"
-
+    
     try:
         cursor = conn.cursor()
         cursor.execute(sql, flawList)
+        conn.commit()
+    except pyodbc.Error as ex:
+        logging.error(ex)
+        sys.exit(1)
+        
+def deleteFlaw(conn, flawList):
+    # Update status for other analysis_id's for the same sandbox/issue
+    #sql = "UPDATE flaws " +\
+          #"   SET remediation_status = ?, " +\
+          #"       update_date = ? " +\
+          #" WHERE analysis_id <> ? " +\
+          #"   AND sandbox_id = ? " +\
+          #"   AND issue_id = ?"
+    
+    # Delete flaws for other analysis_id's for the same sandbox/issue
+    sql = "DELETE FROM flaws " +\
+          " WHERE analysis_id <> ? " +\
+          "   AND sandbox_id = ? " +\
+          "   AND issue_id = ?"
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute(sql, flawList)
+        conn.commit()
     except pyodbc.Error as ex:
         logging.error(ex)
         sys.exit(1)
 
 def getFlawCount(conn, queryParams):
-
     sql = "SELECT COUNT(*) AS thecount " +\
           "  FROM flaws " +\
           " WHERE analysis_id = ? " +\
