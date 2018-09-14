@@ -69,39 +69,43 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
     for cwe in root.findall(strNode):
         remediation_status = (cwe.attrib["remediation_status"])
 
-        issueid = (cwe.attrib["issueid"])
-        # Ignore those with fixed status
-        severity = (cwe.attrib["severity"])
+        flaw_id = (cwe.attrib["issueid"])
+        # Convert sev numbers into high, low, etc
+        severity = (switchSeverity(cwe.attrib["severity"]))
         cweid = (cwe.attrib["cweid"])
         categoryname = (cwe.attrib["categoryname"])
         source_file = (cwe.attrib["sourcefile"])
         line_num = (cwe.attrib["line"])
-
+        
         # Placeholder for linking with tickets
         ticket_id = None
 
         # Check for existing
-        queryParams = [analysis_id, sandbox_id, issueid]
+        queryParams = [analysis_id, sandbox_id, flaw_id]
         flawCount = getFlawCount(conn, queryParams)
 
         if (flawCount > 0):
-            logging.info("UPDATING existing flaw for analysis_id: %s, sandbox_id: %s, issue_id: %s"
-                   % (str(analysis_id), str(sandbox_id), str(issueid)))
+            # TCK logging.info("UPDATING existing flaw for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
+            #       % (str(analysis_id), str(sandbox_id), str(flaw_id)))
             
-            flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(issueid)]
+            flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
             updateFlaw(conn, flawList)
-            
-            # Delete other analyis_id's with same sandbox_id and issue_id
-            flawList = [int(analysis_id), int(sandbox_id), int(issueid)]
-            deleteFlaw(conn, flawList)
-            #logging.info("DELETED duplicate flaws for analysis_id: %s, sandbox_id: %s, issue_id: %s"
-            #              % (analysis_id, sandbox_id, issueid))
             
         else:
             update_date = None
-            flawList = [int(analysis_id), int(sandbox_id), ticket_id, int(severity), int(issueid), remediation_status,
+            flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
                         int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
             insertFlaw(conn, flawList)
+            
+            queryParams = [int(analysis_id), int(sandbox_id), int(flaw_id)]
+            priorFlawCount = getPriorFlawCount(conn, queryParams)
+            
+            # Delete other analyis_id's with same sandbox_id and flaw_id
+            if (priorFlawCount > 0):
+                deleteFlaw(conn, queryParams)
+                logging.info("DELETED duplicate flaws for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
+                          % (analysis_id, sandbox_id, flaw_id))
+            
             
         # Need to track fixed separately
         if remediation_status == "Fixed":
@@ -134,7 +138,7 @@ def insertScan(scanList):
         sys.exit(1)
 
 def insertFlaw(conn, flawList):
-    sql = "INSERT INTO flaws(analysis_id, sandbox_id, ticket_id, severity, issue_id, remediation_status, " +\
+    sql = "INSERT INTO flaws(analysis_id, sandbox_id, ticket_id, severity, flaw_id, remediation_status, " +\
           "cwe_id, category_name, source_file, line_num, load_date, update_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     # Insert into DB
@@ -151,7 +155,7 @@ def updateFlaw(conn, flawList):
           "       update_date = ? " +\
           " WHERE analysis_id = ? " +\
           "   AND sandbox_id = ? " +\
-          "   AND issue_id = ?"
+          "   AND flaw_id = ?"
     
     try:
         cursor = conn.cursor()
@@ -164,17 +168,17 @@ def updateFlaw(conn, flawList):
 def deleteFlaw(conn, flawList):
     # Update status for other analysis_id's for the same sandbox/issue
     #sql = "UPDATE flaws " +\
-          #"   SET remediation_status = ?, " +\
+          #"   SET remediation_status = 'Superceded', " +\
           #"       update_date = ? " +\
-          #" WHERE analysis_id <> ? " +\
+          #" WHERE analysis_id != ? " +\
           #"   AND sandbox_id = ? " +\
-          #"   AND issue_id = ?"
+          #"   AND flaw_id = ?"
     
-    # Delete flaws for other analysis_id's for the same sandbox/issue
+    # Delete flaws for other analysis_id's for the same sandbox/flaw
     sql = "DELETE FROM flaws " +\
           " WHERE analysis_id <> ? " +\
           "   AND sandbox_id = ? " +\
-          "   AND issue_id = ?"
+          "   AND flaw_id = ?"
     
     try:
         cursor = conn.cursor()
@@ -189,7 +193,23 @@ def getFlawCount(conn, queryParams):
           "  FROM flaws " +\
           " WHERE analysis_id = ? " +\
           "   AND sandbox_id = ? " +\
-          "   AND issue_id = ? "
+          "   AND flaw_id = ? "
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute(sql, queryParams)
+    except pyodbc.Error as ex:
+        logging.error(ex)
+
+    for row in cursor.fetchone():
+        return int(row)
+    
+def getPriorFlawCount(conn, queryParams):
+    sql = "SELECT COUNT(*) AS thecount " +\
+          "  FROM flaws " +\
+          " WHERE analysis_id <> ? " +\
+          "   AND sandbox_id = ? " +\
+          "   AND flaw_id = ? "
 
     try:
         cursor = conn.cursor()
@@ -216,6 +236,18 @@ def getScanCount(queryParams):
     for row in cursor.fetchone():
         conn.close()
         return int(row)
+    
+def switchSeverity(x):
+    '''
+    Convert sev numbers into high, low, etc
+    '''
+    return {
+        '1': 'Very Low',
+        '2': 'Low',
+        '3': 'Medium',
+        '4': 'High',
+        '5': 'Very High'
+    }[x]
 
 def main(xml_file):
     total_scans, analysis_id, sandbox_id = getScans(xml_file)
