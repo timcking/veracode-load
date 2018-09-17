@@ -9,7 +9,7 @@ URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
 CONN_STR = (
     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=.\\data\VeracodeAug.accdb;'
+    r'DBQ=.\\data\\Veracode.accdb;'
 )
 
 load_date = datetime.now()
@@ -105,7 +105,6 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
                 deleteFlaw(conn, queryParams)
                 logging.info("DELETED duplicate flaws for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
                           % (analysis_id, sandbox_id, flaw_id))
-            
             
         # Need to track fixed separately
         if remediation_status == "Fixed":

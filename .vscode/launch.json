@@ -4,16 +4,12 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "name": "Python: Current File (Integrated Terminal)",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal",
-            "args": [
-                "xml/DetailedReport_Coreapps_15_Aug_2018_XML.xml"
-            ]
+            "console": "integratedTerminal"
         },
         {
             "name": "Python: Attach",
