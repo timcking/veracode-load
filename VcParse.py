@@ -237,10 +237,9 @@ def getScanCount(queryParams):
         return int(row)
     
 def switchSeverity(x):
-    '''
-    Convert sev numbers into high, low, etc
-    '''
+     # Convert sev numbers into high, low, etc
     return {
+        '0': 'Notification',
         '1': 'Very Low',
         '2': 'Low',
         '3': 'Medium',

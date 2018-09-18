@@ -56,7 +56,6 @@ class MainDialog(QDialog):
         queryParams = [ticketID, sandboxID, strFlaws]
         count = self.updateFlaws(queryParams)
         QMessageBox.about(self, "Ticket ID " + ticketID, str(count) + " flaws updated")
-        print (count)
         
     def updateFlaws(self, queryParams):
         sql =  "UPDATE flaws " +\
@@ -70,7 +69,9 @@ class MainDialog(QDialog):
             conn.commit()
             conn.close()
         except pyodbc.Error as ex:
-            QMessageBox.about(self, "Error", ex)
+            QMessageBox.about(self, "Error", str(ex))
+            row_count = 0
+            
         return row_count
     
     # TCK ToDo
@@ -88,7 +89,8 @@ class MainDialog(QDialog):
             conn.commit()
             conn.close()
         except pyodbc.Error as ex:
-            QMessageBox.about(self, "Error", ex)
+            QMessageBox.about(self, "Error", str(ex))
+            row_count = 0
             
         return row_count    
             
