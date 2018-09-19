@@ -6,7 +6,7 @@
 	
 1. Unzip the file LoadApp_YYYY-MM-DD.7z into a local directory of your choice. A sub-folder named LoadApp will be created with the executables and data. 
 
-1. There will be two .exe files in the LoadApp directory, LoadApp.exe and LinkApp.exe. You can create shortcuts on the Desktop if you choose. 
+1. There will be two .exe files in the LoadApp directory, LoadApp.exe and LinkApp.exe. You may create Desktop or Start Menu shortcuts.
 
 1. Verify that the following sub-folders exist under the LoadApp directory:
 	* xml

@@ -20,4 +20,4 @@ log
 *.wpu
 dist
 build
-*.spec
+*.7z

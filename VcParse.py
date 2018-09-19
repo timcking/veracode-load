@@ -7,14 +7,17 @@ import logging
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
+# Database should be located in the data folder
 CONN_STR = (
     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
     r'DBQ=.\\data\\Veracode.accdb;'
 )
 
+# Timestamp
 load_date = datetime.now()
 
 def getScans(xml_file):
+    # Setup logging
     logName = xml_file.replace(".xml", ".log").replace("xml/", "log/")
     logging.basicConfig(filename=logName, format='%(levelname)s: %(message)s', filemode='w', level=logging.DEBUG)
     
@@ -30,6 +33,7 @@ def getScans(xml_file):
         submitter = dr.attrib["submitter"]
         str_gen_date = dr.attrib["generation_date"]
 
+        # Translate the Veracode date/time
         generation_date = datetime.strptime(str_gen_date, '%Y-%m-%d %H:%M:%S %Z')
 
     for sa in root.findall("./" + URL + "static-analysis"):
@@ -43,10 +47,11 @@ def getScans(xml_file):
     queryParams = [analysis_id, sandbox_id]
     scanCount = getScanCount(queryParams)
             
+    # Does not overwrite existing scans
     if scanCount > 0:
         logging.info("IGNORING existing scan for analysis_id %s, sandbox_id %s " % (str(analysis_id), str(sandbox_id)))
     else:
-        # Write scans
+        # Write scans to database
         scanList = [int(analysis_id), int(sandbox_id), version, module_name, sandbox_name, submitter,
                     generation_date, int(total_scans), load_date, xml_file.replace("xml/", "")]
 
@@ -85,13 +90,11 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         flawCount = getFlawCount(conn, queryParams)
 
         if (flawCount > 0):
-            # TCK logging.info("UPDATING existing flaw for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
-            #       % (str(analysis_id), str(sandbox_id), str(flaw_id)))
-            
+            # Update
             flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
             updateFlaw(conn, flawList)
-            
         else:
+            # Insert
             update_date = None
             flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
                         int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
