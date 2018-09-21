@@ -25,8 +25,6 @@ The data directory will contain the Access database, Veracode.accdb. The Veracod
 
 1. The status bar will display the number of flaws loaded.
 
-1. If you have Cygwin installed, you can load all folders in the xml/ directory by running ./run.sh.
-
 1. You can browse the Scans and associated Flaws by opening the Veracode database and selecting frmScans. You can view the raw data by opening the flaws, scans, or ticket tables.
 
 1. When you are ready to assign Flaws to Citrix tickets:

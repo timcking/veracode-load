@@ -48,8 +48,6 @@ To run the Link app:
 python LinkApp.py
 ```
 
-If you have Cygwin installed, you can use the ```run-loader.sh``` script to load all files in the "xml" directory at one time.
-
 ### How to Build and Deploy  
 
 1. Open a command window and run ```Scripts\activate.bat```.
