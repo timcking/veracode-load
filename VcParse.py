@@ -1,13 +1,13 @@
 import xml.etree.ElementTree as ET
 import sys
-import pyodbc
 from datetime import datetime
 import logging
+import Database as db
+import pyodbc
 
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
-# Database should be located in the data folder
 CONN_STR = (
     r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
     r'DBQ=.\\data\\Veracode.accdb;'
@@ -20,6 +20,8 @@ def getScans(xml_file):
     # Setup logging
     logName = xml_file.replace(".xml", ".log").replace("xml/", "log/")
     logging.basicConfig(filename=logName, format='%(levelname)s: %(message)s', filemode='w', level=logging.DEBUG)
+
+    conn = pyodbc.connect(CONN_STR)
     
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -44,18 +46,19 @@ def getScans(xml_file):
         module_name = flaw.attrib["name"]
 
     # Check for existing
-    queryParams = [analysis_id, sandbox_id]
-    scanCount = getScanCount(queryParams)
+    queryParams = [analysis_id]
+    scanCount = db.getScanCount(conn, queryParams)
             
     # Does not overwrite existing scans
     if scanCount > 0:
         logging.info("IGNORING existing scan for analysis_id %s, sandbox_id %s " % (str(analysis_id), str(sandbox_id)))
+        return -1, analysis_id, sandbox_id
     else:
         # Write scans to database
         scanList = [int(analysis_id), int(sandbox_id), version, module_name, sandbox_name, submitter,
                     generation_date, int(total_scans), load_date, xml_file.replace("xml/", "")]
 
-        insertScan(scanList)
+        db.insertScan(conn, scanList)
 
     logging.info("Scan count: %s" % total_scans)
     return total_scans, analysis_id, sandbox_id
@@ -86,28 +89,29 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         ticket_id = None
 
         # Check for existing
-        queryParams = [analysis_id, sandbox_id, flaw_id]
-        flawCount = getFlawCount(conn, queryParams)
+        #queryParams = [analysis_id, sandbox_id, flaw_id]
+        #flawCount = db.getFlawCount(conn, queryParams)
 
-        if (flawCount > 0):
-            # Update
-            flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
-            updateFlaw(conn, flawList)
-        else:
-            # Insert
-            update_date = None
-            flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
-                        int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
-            insertFlaw(conn, flawList)
-            
-            queryParams = [int(analysis_id), int(sandbox_id), int(flaw_id)]
-            priorFlawCount = getPriorFlawCount(conn, queryParams)
-            
+        #if (flawCount > 0):
+            ## Update
+            #flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
+            #db.updateFlaw(conn, flawList)
+        #else:
+        # Insert
+        update_date = None
+        flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
+                    int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
+        db.insertFlaw(conn, flawList)
+        
+        queryParams = [int(analysis_id), int(sandbox_id), int(flaw_id)]
+        priorFlawCount = db.getPriorFlawCount(conn, queryParams)
+        
             # Delete other analyis_id's with same sandbox_id and flaw_id
-            if (priorFlawCount > 0):
-                deleteFlaw(conn, queryParams)
-                logging.info("DELETED duplicate flaws for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
-                          % (analysis_id, sandbox_id, flaw_id))
+            #if (priorFlawCount > 0):
+                #queryParams = [load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
+                #db.updateFixedFlaw(conn, queryParams)
+                #logging.info("UPDATED status to Fixed for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
+                          #% (analysis_id, sandbox_id, flaw_id))
             
         # Need to track fixed separately
         if remediation_status == "Fixed":
@@ -122,124 +126,11 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
     logging.info ("Flaw count: %s" % total_flaws)
     logging.info ("Fixed count: %s" % fixed)
 
+    logging.disable()
+    
     return total_flaws
 
-def insertScan(scanList):
-    sql = "INSERT INTO scans(analysis_id, sandbox_id, version, module_name, sandbox_name, submitter, " +\
-          "generation_date, total_flaws, load_date, load_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
-    # Insert into DB
-    try:
-        conn = pyodbc.connect(CONN_STR)
-        cursor = conn.cursor()
-        cursor.execute(sql, scanList)
-        conn.commit()
-        conn.close()
-    except pyodbc.Error as ex:
-        logging.error(ex)
-        sys.exit(1)
-
-def insertFlaw(conn, flawList):
-    sql = "INSERT INTO flaws(analysis_id, sandbox_id, ticket_id, severity, flaw_id, remediation_status, " +\
-          "cwe_id, category_name, source_file, line_num, load_date, update_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
-    # Insert into DB
-    try:
-        cursor = conn.cursor()
-        cursor.execute(sql, flawList)
-    except pyodbc.Error as ex:
-        logging.error(ex)
-        sys.exit(1)
-
-def updateFlaw(conn, flawList):
-    sql = "UPDATE flaws " +\
-          "   SET remediation_status = ?, " +\
-          "       update_date = ? " +\
-          " WHERE analysis_id = ? " +\
-          "   AND sandbox_id = ? " +\
-          "   AND flaw_id = ?"
-    
-    try:
-        cursor = conn.cursor()
-        cursor.execute(sql, flawList)
-        conn.commit()
-    except pyodbc.Error as ex:
-        logging.error(ex)
-        sys.exit(1)
-        
-def deleteFlaw(conn, flawList):
-    # Update status for other analysis_id's for the same sandbox/issue
-    #sql = "UPDATE flaws " +\
-          #"   SET remediation_status = 'Superceded', " +\
-          #"       update_date = ? " +\
-          #" WHERE analysis_id != ? " +\
-          #"   AND sandbox_id = ? " +\
-          #"   AND flaw_id = ?"
-    
-    # Delete flaws for other analysis_id's for the same sandbox/flaw
-    sql = "DELETE FROM flaws " +\
-          " WHERE analysis_id <> ? " +\
-          "   AND sandbox_id = ? " +\
-          "   AND flaw_id = ?"
-    
-    try:
-        cursor = conn.cursor()
-        cursor.execute(sql, flawList)
-        conn.commit()
-    except pyodbc.Error as ex:
-        logging.error(ex)
-        sys.exit(1)
-
-def getFlawCount(conn, queryParams):
-    sql = "SELECT COUNT(*) AS thecount " +\
-          "  FROM flaws " +\
-          " WHERE analysis_id = ? " +\
-          "   AND sandbox_id = ? " +\
-          "   AND flaw_id = ? "
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute(sql, queryParams)
-    except pyodbc.Error as ex:
-        logging.error(ex)
-
-    for row in cursor.fetchone():
-        return int(row)
-    
-def getPriorFlawCount(conn, queryParams):
-    sql = "SELECT COUNT(*) AS thecount " +\
-          "  FROM flaws " +\
-          " WHERE analysis_id <> ? " +\
-          "   AND sandbox_id = ? " +\
-          "   AND flaw_id = ? "
-
-    try:
-        cursor = conn.cursor()
-        cursor.execute(sql, queryParams)
-    except pyodbc.Error as ex:
-        logging.error(ex)
-
-    for row in cursor.fetchone():
-        return int(row)
-
-def getScanCount(queryParams):
-    sql = "SELECT COUNT(*) AS thecount " +\
-          "  FROM scans " +\
-          " WHERE analysis_id = ? " +\
-          "   AND sandbox_id = ?"
-    try:
-        conn = pyodbc.connect(CONN_STR)
-        cursor = conn.cursor()
-        cursor.execute(sql, queryParams)
-    except pyodbc.Error as ex:
-        logging.error(ex)
-        sys.exit(1)    
-
-    for row in cursor.fetchone():
-        conn.close()
-        return int(row)
-    
-def switchSeverity(x):
+def switchSeverity(sev_num):
      # Convert sev numbers into high, low, etc
     return {
         '0': 'Notification',
@@ -248,7 +139,7 @@ def switchSeverity(x):
         '3': 'Medium',
         '4': 'High',
         '5': 'Very High'
-    }[x]
+    }[sev_num]
 
 def main(xml_file):
     total_scans, analysis_id, sandbox_id = getScans(xml_file)

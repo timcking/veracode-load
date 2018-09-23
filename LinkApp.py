@@ -8,6 +8,8 @@ CONN_STR = (
     r'DBQ=.\\data\\Veracode.accdb;'
 )
 
+conn = pyodbc.connect(CONN_STR)
+
 class MainDialog(QDialog):
     def __init__(self, *positional_parameters, **keyword_parameters):
         super(MainDialog, self).__init__()
@@ -54,26 +56,24 @@ class MainDialog(QDialog):
             strFlaws = strFlaws[:-1]
             
         queryParams = [ticketID, sandboxID, strFlaws]
-        count = self.updateFlaws(queryParams)
+        count = self.updateLinkFlaws(queryParams)
         QMessageBox.about(self, "Ticket ID " + ticketID, str(count) + " flaws updated")
         
-    def updateFlaws(self, queryParams):
+    def updateLinkFlaws(self, queryParams):
         sql =  "UPDATE flaws " +\
                "  SET ticket_id = " + queryParams[0] + " " +\
                "WHERE sandbox_id =  " + queryParams[1]+\
                "  AND flaw_id IN (" + queryParams[2] + ")"
         try:
-            conn = pyodbc.connect(CONN_STR)
             cursor = conn.cursor()
             row_count = cursor.execute(sql).rowcount
             conn.commit()
-            conn.close()
         except pyodbc.Error as ex:
             QMessageBox.about(self, "Error", str(ex))
             row_count = 0
             
         return row_count
-    
+        
     # TCK ToDo
     def updateFlawsParam(self, queryParams):
         print (len(queryParams[2]))
@@ -83,33 +83,14 @@ class MainDialog(QDialog):
                "WHERE sandbox_id = ? " +\
                "  AND flaw_id IN (%s)" % placeholders
         try:
-            conn = pyodbc.connect(CONN_STR)
             cursor = conn.cursor()
             row_count = cursor.execute(sql, queryParams).rowcount
             conn.commit()
-            conn.close()
         except pyodbc.Error as ex:
             QMessageBox.about(self, "Error", str(ex))
             row_count = 0
             
         return row_count    
-            
-    def getScanCount(self):
-        sql = """
-              SELECT COUNT(*) AS thecount
-                FROM scans
-              """
-        try:
-            conn = pyodbc.connect(CONN_STR)
-            cursor = conn.cursor()
-            cursor.execute(sql)
-        except pyodbc.Error as ex:
-            # logging.error(ex)
-            sys.exit(1)    
-
-        for row in cursor.fetchone():
-            conn.close()
-            return int(row)
 
 if __name__ == '__main__':
     import sys
@@ -119,3 +100,4 @@ if __name__ == '__main__':
     # Vs Code bug
     # sys.exit(dialog.exec_())
     dialog.exec_()
+    conn.close()

@@ -1,0 +1,7 @@
+#!/bin/sh
+SOURCE_DIR=/cygdrive/d/veracode-load/
+DEST_DIR=/cygdrive/c/proj/veracode-load/
+
+rsync -r --exclude-from=./exclude_rsync --inplace --log-file=./rsync.log $SOURCE_DIR $DEST_DIR
+cat ./rsync.log
+rm -f ./rsync.log

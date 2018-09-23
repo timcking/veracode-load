@@ -10,7 +10,9 @@ a = Analysis(['LoadApp.py'],
 			        ('C:\\proj\\veracode-load\\data\\Veracode.accdb', '.\\data\\'),
 					('C:\\proj\\veracode-load\\run-loader.sh', '.'),
 					('C:\\proj\\veracode-load\\README.*', '.'),
-					('C:\\proj\\veracode-load\\VcParse.py', '.')
+					('C:\\proj\\veracode-load\\VcParse.py', '.'),
+					('C:\\proj\\veracode-load\\xml\\', '.\\xml\\'),
+					('C:\\proj\\veracode-load\\log\\', '.\\log\\')
 			       ],
              hiddenimports=[],
              hookspath=[],

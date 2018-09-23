@@ -41,6 +41,11 @@ class AppWindow(QMainWindow):
     def onLoadClick(self):
         xmlFile = self.ui.textFile.text()
         total_scans, analysis_id, sandbox_id = VcParse.getScans(xmlFile)
+        
+        if total_scans == -1 :
+            self.ui.statusBar.showMessage("Analysis ID %s already exists, ignoring this scan" % (analysis_id))
+            return
+        
         total_flaws = VcParse.getFlaws(xmlFile, analysis_id, sandbox_id)
 
         if total_scans == total_flaws:
