@@ -69,7 +69,7 @@ def updateFixedFlaw(conn, flawList):
 def getFlawCount(conn, queryParams):
     sql = "SELECT COUNT(*) AS thecount " +\
           "  FROM flaws " +\
-          " WHERE analysis_id = ? " +\
+          " WHERE analysis_id <> ? " +\
           "   AND sandbox_id = ? " +\
           "   AND flaw_id = ? "
 

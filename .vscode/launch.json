@@ -9,7 +9,10 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+             "args": [
+                "xml/DetailedReport_BAR97_Coreapps_22_Jun_2018.xml"
+             ]
         },
         {
             "name": "Python: Attach",

@@ -25,6 +25,13 @@ class MainDialog(QDialog):
         self.ui.buttonLink.clicked.connect(self.onLinkClick)
         
     def onLinkClick(self):
+        if self.ui.textAnalysisId.text():
+            analysisID = self.ui.textAnalysisId.text()
+        else:
+            QMessageBox.about(self, "Error", "Analysis ID required")
+            self.ui.textAnalysisId.setFocus()
+            return
+        
         if self.ui.textSandboxId.text():
             sandboxID = self.ui.textSandboxId.text()
         else:
@@ -55,15 +62,16 @@ class MainDialog(QDialog):
         if strFlaws.endswith(","):
             strFlaws = strFlaws[:-1]
             
-        queryParams = [ticketID, sandboxID, strFlaws]
+        queryParams = [ticketID, sandboxID, analysisID, strFlaws]
         count = self.updateLinkFlaws(queryParams)
         QMessageBox.about(self, "Ticket ID " + ticketID, str(count) + " flaws updated")
-        
+    
     def updateLinkFlaws(self, queryParams):
         sql =  "UPDATE flaws " +\
                "  SET ticket_id = " + queryParams[0] + " " +\
-               "WHERE sandbox_id =  " + queryParams[1]+\
-               "  AND flaw_id IN (" + queryParams[2] + ")"
+               "WHERE sandbox_id =  " + queryParams[1] +\
+               "  AND analysis_id = " + queryParams[2] +\
+               "  AND flaw_id IN (" + queryParams[3] + ")"
         try:
             cursor = conn.cursor()
             row_count = cursor.execute(sql).rowcount
@@ -73,7 +81,7 @@ class MainDialog(QDialog):
             row_count = 0
             
         return row_count
-        
+    
     # TCK ToDo
     def updateFlawsParam(self, queryParams):
         print (len(queryParams[2]))

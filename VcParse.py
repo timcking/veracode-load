@@ -88,6 +88,7 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         # Placeholder for linking with tickets
         ticket_id = None
 
+        # Commented out code will overwrite existing flaws with new analysis_id if sandbox is the same
         # Check for existing
         #queryParams = [analysis_id, sandbox_id, flaw_id]
         #flawCount = db.getFlawCount(conn, queryParams)
@@ -97,6 +98,7 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
             #flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
             #db.updateFlaw(conn, flawList)
         #else:
+        
         # Insert
         update_date = None
         flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
@@ -105,14 +107,7 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         
         queryParams = [int(analysis_id), int(sandbox_id), int(flaw_id)]
         priorFlawCount = db.getPriorFlawCount(conn, queryParams)
-        
-            # Delete other analyis_id's with same sandbox_id and flaw_id
-            #if (priorFlawCount > 0):
-                #queryParams = [load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
-                #db.updateFixedFlaw(conn, queryParams)
-                #logging.info("UPDATED status to Fixed for analysis_id: %s, sandbox_id: %s, flaw_id: %s"
-                          #% (analysis_id, sandbox_id, flaw_id))
-            
+    
         # Need to track fixed separately
         if remediation_status == "Fixed":
             fixed += 1

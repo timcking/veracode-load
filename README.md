@@ -2,11 +2,11 @@
 ### Installation
 *This installation will not modify Windows settings (e.g., the registry). This app can be completely removed by deleting the installation folder.*
 
-1. The Microsoft Access 2010 Database Engine is required. Download and install from [Microsoft](https://www.microsoft.com/en-us/download/details.aspx?id=13255).
+1. The Microsoft Access 2010 Database Engine is required. Download from [Microsoft](https://www.microsoft.com/en-us/download/details.aspx?id=13255) and install.
 	
-1. Unzip the file LoadApp_YYYY-MM-DD.7z into a local directory of your choice. A sub-folder named LoadApp will be created with the executables and data. 
+1. Unzip the file VeracodeLoad_YYYY-MM-DD.7z into a local directory of your choice. A sub-folder named LoadApp will be created with the executables and data. 
 
-1. There will be two .exe files in the LoadApp directory, LoadApp.exe and LinkApp.exe. You may create Desktop or Start Menu shortcuts.
+1. There will be two .exe files in the LoadApp directory, LoadApp.exe and LinkApp.exe. You will need to manually create Desktop or Start Menu shortcuts.
 
 1. Verify that the following sub-folders exist under the LoadApp directory:
 	* xml
@@ -32,7 +32,7 @@ The data directory will contain the Access database, Veracode.accdb. The Veracod
 
 	1. Open frmTickets and enter the Citrix Ticket ID and the Release Version. Save the new record.
 
-	1. Run the LinkApp.exe file and enter the Sandbox ID, the Citrix Ticket ID, and the Flaw IDs.
+	1. Run the LinkApp.exe file and enter the Sandbox ID, the Analysis ID, the Citrix Ticket ID, and the Flaw IDs.
 
 	1. Press the Link button.
 

@@ -2,6 +2,6 @@
 SOURCE_DIR=/cygdrive/c/proj/veracode-load/
 DEST_DIR=/cygdrive/d/veracode-load/
 
-rsync -r --exclude-from=./exclude_rsync --inplace --log-file=./rsync.log $SOURCE_DIR $DEST_DIR
+rsync -avz --exclude-from=./exclude_rsync --log-file=./rsync.log $SOURCE_DIR $DEST_DIR
 cat ./rsync.log
 rm -f ./rsync.log
