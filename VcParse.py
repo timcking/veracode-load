@@ -2,27 +2,22 @@ import xml.etree.ElementTree as ET
 import sys
 from datetime import datetime
 import logging
-import Database as db
-import pyodbc
+from Database import Database
 
 # Every object in the tree has this at the beginning
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
-CONN_STR = (
-    r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'
-    r'DBQ=.\\data\\Veracode.accdb;'
-)
-
 # Timestamp
 load_date = datetime.now()
+
+# Setup database
+db = Database()
 
 def getScans(xml_file):
     # Setup logging
     logName = xml_file.replace(".xml", ".log").replace("xml/", "log/")
     logging.basicConfig(filename=logName, format='%(levelname)s: %(message)s', filemode='w', level=logging.DEBUG)
 
-    conn = pyodbc.connect(CONN_STR)
-    
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
@@ -47,7 +42,7 @@ def getScans(xml_file):
 
     # Check for existing
     queryParams = [analysis_id]
-    scanCount = db.getScanCount(conn, queryParams)
+    scanCount = db.getScanCount(queryParams)
             
     # Does not overwrite existing scans
     if scanCount > 0:
@@ -58,7 +53,7 @@ def getScans(xml_file):
         scanList = [int(analysis_id), int(sandbox_id), version, module_name, sandbox_name, submitter,
                     generation_date, int(total_scans), load_date, xml_file.replace("xml/", "")]
 
-        db.insertScan(conn, scanList)
+        db.insertScan(scanList)
 
     logging.info("Scan count: %s" % total_scans)
     return total_scans, analysis_id, sandbox_id
@@ -66,8 +61,6 @@ def getScans(xml_file):
 def getFlaws(xml_file, analysis_id, sandbox_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
-
-    conn = pyodbc.connect(CONN_STR)
 
     # Write flaws
     row = 1
@@ -103,10 +96,10 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         update_date = None
         flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,
                     int(cweid), categoryname, source_file, int(line_num), load_date, update_date]
-        db.insertFlaw(conn, flawList)
+        db.insertFlaw(flawList)
         
         queryParams = [int(analysis_id), int(sandbox_id), int(flaw_id)]
-        priorFlawCount = db.getPriorFlawCount(conn, queryParams)
+        priorFlawCount = db.getPriorFlawCount(queryParams)
     
         # Need to track fixed separately
         if remediation_status == "Fixed":
@@ -114,15 +107,11 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         else:
             row += 1
 
-    conn.commit()
-    conn.close()
-
     total_flaws = (row - 1)
     logging.info ("Flaw count: %s" % total_flaws)
     logging.info ("Fixed count: %s" % fixed)
 
     logging.disable()
-    
     return total_flaws
 
 def switchSeverity(sev_num):
@@ -143,6 +132,7 @@ def main(xml_file):
     if total_scans != total_flaws:
         logging.error("Flaw counts do not match!")
         sys.exit(1)
+
     print("End")
 
 if __name__ == "__main__":

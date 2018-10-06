@@ -15,4 +15,4 @@ proj.launch-config = {loc('VcParse.py'): ('project',
                       loc('tk.py'): ('project',
                                      (u'xml/DetailedReport_Coreapps_15_Aug_2018_XML.xml',
                                       ''))}
-proj.main-file = loc('LinkApp.py')
+proj.main-file = loc('LoadApp.py')
