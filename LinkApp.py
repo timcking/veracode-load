@@ -82,7 +82,6 @@ class MainDialog(QDialog):
             
         return row_count
     
-    # TCK ToDo
     def updateFlawsParam(self, queryParams):
         print (len(queryParams[2]))
         placeholders = ",".join("?" * len(queryParams[2]))

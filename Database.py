@@ -53,22 +53,11 @@ class Database:
             logging.error(str(ex))
             sys.exit(1)
             
-    def updateFixedFlaw(self, flawList):
-        # TCK ToDo, test
-        # Update status for other analysis_id's for the same sandbox/flaw
-        sql = "UPDATE flaws " +\
-            "   SET remediation_status = 'Fixed', " +\
-            "       update_date = ? " +\
-            " WHERE analysis_id <> ? " +\
-            "   AND sandbox_id = ? " +\
-            "   AND flaw_id = ?"
-        
-        # Delete flaws for other analysis_id's for the same sandbox/flaw
-        #sql = "DELETE FROM flaws " +\
-        #      " WHERE analysis_id <> ? " +\
-        #      "   AND sandbox_id = ? " +\
-        #      "   AND flaw_id = ?"
-        
+    def deleteFlaws(self, flawList):
+        # Delete flaws for other analysis_id's for the same sandbox
+        sql = "DELETE FROM flaws " +\
+              " WHERE analysis_id <> ? " +\
+              "   AND sandbox_id = ?"
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql, flawList)

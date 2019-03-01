@@ -4,7 +4,7 @@ from datetime import datetime
 import logging
 from Database import Database
 
-# Every object in the tree has this at the beginning
+# Every object in the tree has this prefix
 URL = "{https://www.veracode.com/schema/reports/export/1.0}"
 
 # Timestamp
@@ -51,7 +51,7 @@ def getScans(xml_file):
     else:
         # Write scans to database
         scanList = [int(analysis_id), int(sandbox_id), version, module_name, sandbox_name, submitter,
-                    generation_date, int(total_scans), load_date, xml_file.replace("xml/", "")]
+                    generation_date, int(total_scans), load_date, xml_file]
 
         db.insertScan(scanList)
 
@@ -61,6 +61,10 @@ def getScans(xml_file):
 def getFlaws(xml_file, analysis_id, sandbox_id):
     tree = ET.parse(xml_file)
     root = tree.getroot()
+
+    # Delete existing flaws for the same sandbox_id
+    queryParams = [analysis_id, sandbox_id]
+    db.deleteFlaws(queryParams)
 
     # Write flaws
     row = 1
@@ -83,14 +87,13 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
 
         # Commented out code will overwrite existing flaws with new analysis_id if sandbox is the same
         # Check for existing
-        #queryParams = [analysis_id, sandbox_id, flaw_id]
-        #flawCount = db.getFlawCount(conn, queryParams)
+        # queryParams = [analysis_id, sandbox_id, flaw_id]
+        # flawCount = db.getFlawCount(queryParams)
 
-        #if (flawCount > 0):
-            ## Update
-            #flawList = [remediation_status, load_date, int(analysis_id), int(sandbox_id), int(flaw_id)]
-            #db.updateFlaw(conn, flawList)
-        #else:
+        # if (flawCount > 0):
+        #     flawList = [int(analysis_id), int(sandbox_id), int(flaw_id)]
+        #     db.deleteFixedFlaw(flawList)
+        ## else:
         
         # Insert
         update_date = None
