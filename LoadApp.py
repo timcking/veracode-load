@@ -39,6 +39,8 @@ class AppWindow(QMainWindow):
             self.ui.statusBar.showMessage('File not found!')
 
     def onLoadClick(self):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
         xmlFile = self.ui.textFile.text()
         total_scans, analysis_id, sandbox_id = VcParse.getScans(xmlFile)
         
@@ -53,6 +55,8 @@ class AppWindow(QMainWindow):
         else:
             self.ui.statusBar.showMessage('Flaw count does not match! ' + str(total_scans) +
             ' vs. ' + str(total_flaws))
+
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
             
     def toggleButton(self):
         if len(self.ui.textFile.text()) > 0:

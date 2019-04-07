@@ -26,17 +26,23 @@ The data directory will contain the Access database, Veracode.accdb. The Veracod
 
 1. The status bar will display the number of flaws loaded.
 
-1. You can browse the Scans and associated Flaws by opening the Veracode database and selecting frmScans. You can view the raw data by opening the flaws, scans, or ticket tables.
+1. You can browse the Scans and associated Flaws by opening the Veracode database and selecting frmScans.
 
-1. When you are ready to assign Flaws to Citrix tickets:
+    <p align="center"> 
+       <img src="./Annotation_2019-03-01.jpg" width="400">
+    </p>
+
+1.  You can view the raw data by opening the flaws, scans, or ticket tables.
+  
+3. When you are ready to assign Flaws to Citrix tickets:
 
 	1. Open the Veracode database.
 
-	1. Open frmTickets and enter the Citrix Ticket ID and the Release Version. Save the new record.
+	2. Open frmTickets and enter the Citrix Ticket ID and the Release Version. Save the new record.
 
-	1. Run the LinkApp.exe file and enter the Sandbox ID, the Analysis ID, the Citrix Ticket ID, and the Flaw IDs.
+	3. Run the LinkApp.exe file and enter the Sandbox ID, the Analysis ID, the Citrix Ticket ID, and the Flaw IDs.
 
-	1. Press the Link button.
+	4. Press the Link button.
 
-	1. The linked Flaws will be displayed in frmTickets in the Veracode database.
+	5. The linked Flaws will be displayed in frmTickets in the Veracode database.
 

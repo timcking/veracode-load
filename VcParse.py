@@ -63,8 +63,8 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
     root = tree.getroot()
 
     # Delete existing flaws for the same sandbox_id
-    queryParams = [analysis_id, sandbox_id]
-    db.deleteFlaws(queryParams)
+    # queryParams = [analysis_id, sandbox_id]
+    # db.deleteFlaws(queryParams)
 
     # Write flaws
     row = 1
@@ -85,16 +85,15 @@ def getFlaws(xml_file, analysis_id, sandbox_id):
         # Placeholder for linking with tickets
         ticket_id = None
 
-        # Commented out code will overwrite existing flaws with new analysis_id if sandbox is the same
+        # Will overwrite existing flaws with new analysis_id if sandbox and flaw id are the same
         # Check for existing
-        # queryParams = [analysis_id, sandbox_id, flaw_id]
-        # flawCount = db.getFlawCount(queryParams)
+        queryParams = [analysis_id, sandbox_id, flaw_id]
+        flawCount = db.getFlawCount(queryParams)
 
-        # if (flawCount > 0):
-        #     flawList = [int(analysis_id), int(sandbox_id), int(flaw_id)]
-        #     db.deleteFixedFlaw(flawList)
-        ## else:
-        
+        if (flawCount > 0):
+            flawList = [int(analysis_id), int(sandbox_id), int(flaw_id)]
+            db.deleteDupFlaws(flawList)
+
         # Insert
         update_date = None
         flawList = [int(analysis_id), int(sandbox_id), ticket_id, severity, int(flaw_id), remediation_status,

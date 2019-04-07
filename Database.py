@@ -53,11 +53,12 @@ class Database:
             logging.error(str(ex))
             sys.exit(1)
             
-    def deleteFlaws(self, flawList):
+    def deleteDupFlaws(self, flawList):
         # Delete flaws for other analysis_id's for the same sandbox
         sql = "DELETE FROM flaws " +\
               " WHERE analysis_id <> ? " +\
-              "   AND sandbox_id = ?"
+              "   AND sandbox_id = ?" +\
+              "   AND flaw_id = ?"
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql, flawList)
@@ -87,7 +88,6 @@ class Database:
             " WHERE analysis_id <> ? " +\
             "   AND sandbox_id = ? " +\
             "   AND flaw_id = ? "
-
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql, queryParams)
